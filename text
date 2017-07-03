@@ -1,0 +1,153 @@
+// What is the population of the US? (starts with 2, ends with 000)
+SELECT population FROM country WHERE name='United States'
+//returned: 278357000
+
+//What is the area of the US? (starts with 9, ends with million square miles)
+SELECT surfacearea FROM country WHERE name='United States'
+//returned: 9.36352e+06
+
+//List the countries in Africa that have a population smaller than 30,000,000 and a life expectancy of more than 45? (all 37 of them)
+SELECT name FROM country WHERE continent='Africa' AND population< 3e+7 AND lifeexpectancy>45
+//returned : "Benin"
+"Burkina Faso"
+"Burundi"
+"Djibouti"
+"Eritrea"
+"Gabon"
+"Gambia"
+"Ghana"
+"Guinea"
+"Guinea-Bissau"
+"Cameroon"
+"Cape Verde"
+"Comoros"
+"Congo"
+"Lesotho"
+"Liberia"
+"Libyan Arab Jamahiriya"
+"Western Sahara"
+"Madagascar"
+"Mali"
+"Morocco"
+"Mauritania"
+"Mauritius"
+"Mayotte"
+"Cï¿½te dï¿½Ivoire"
+"Equatorial Guinea"
+"Rï¿½union"
+"Saint Helena"
+"Sao Tome and Principe"
+"Senegal"
+"Seychelles"
+"Sierra Leone"
+"Somalia"
+"Sudan"
+"Togo"
+"Chad"
+"Tunisia"
+
+//Which countries are something like a republic? (are there 122 or 143 countries or ?)
+SELECT name FROM country WHERE governmentform LIKE '%Republic%'
+//143 rows
+
+//Which countries are some kind of republic and acheived independence after 1945?
+SELECT name FROM country WHERE governmentform LIKE '%Republic%' AND indepyear > 1945
+//92 rows
+
+//Which countries acheived independence after 1945 and are not some kind of republic?
+SELECT name FROM country WHERE NOT(governmentform='%Republic%') AND indepyear > 1945
+//119 rows
+
+//Which fifteen countries have the lowest life expectancy?
+SELECT name FROM country ORDER BY lifeexpectancy ASC LIMIT 15
+
+//Which fifteen countries have the lowest highest life expectancy?
+SELECT name FROM country ORDER BY lifeexpectancy DESC LIMIT 15
+
+//Which five countries have the lowest population density? highest population density?
+SELECT name FROM country ORDER BY population/surfacearea LIMIT 5
+
+//Which five countries have the highest population density?
+SELECT name FROM country ORDER BY population/surfacearea DESC LIMIT 5
+
+//Which is the smallest country, by area and population? the 10 smallest countries, by area and population?
+SELECT name, population FROM country ORDER BY population, surfacearea LIMIT 1
+SELECT name, population FROM country ORDER BY population, surfacearea LIMIT 10
+
+//Which is the biggest country, by area and population? the 10 biggest countries, by area and population?
+SELECT name, population FROM country ORDER BY population DESC, surfacearea DESC LIMIT 1
+SELECT name, population FROM country ORDER BY population DESC, surfacearea DESC LIMIT 10
+
+//Of the smallest 10 countries, which has the biggest gnp? (hint: use WITH and LIMIT)
+WITH tensmallest AS (SELECT name, gnp FROM country ORDER BY surfacearea LIMIT 10) SELECT name, gnp FROM tensmallest ORDER BY gnp DESC
+
+//Of the smallest 10 countries, which has the biggest per capita gnp?
+WITH tensmallest AS (SELECT name, gnp, population FROM country WHERE population > 0 ORDER BY surfacearea LIMIT 10) SELECT name, gnp FROM tensmallest ORDER BY gnp/population DESC
+
+//Of the biggest 10 countries, which has the biggest per capita gnp?
+WITH tenlargest AS (SELECT name, gnp, population FROM country WHERE population > 0 ORDER BY surfacearea DESC LIMIT 10) SELECT name, gnp FROM tenlargest ORDER BY gnp/population DESC
+
+//Of the biggest 10 countries, which has the biggest gnp?
+WITH tenlargest AS (SELECT name, gnp FROM country ORDER BY surfacearea DESC LIMIT 10) SELECT name, gnp FROM tenlargest ORDER BY gnp DESC
+
+//What is the sum of surface area of the 10 biggest countries in the world? The 10 smallest?
+WITH tenlargest AS (SELECT surfacearea FROM country ORDER BY surfacearea DESC LIMIT 10) SELECT SUM(surfacearea) AS "Surface Area" FROM tenlargest
+
+WITH tensmallest AS (SELECT surfacearea FROM country ORDER BY surfacearea LIMIT 10) SELECT SUM(surfacearea) AS "Surface Area" FROM tensmallest
+
+//How big are the continents in term of area and population?
+"SELECT continent, SUM(population) AS "Sum population", SUM(surfacearea) AS "Sum surface area" FROM country GROUP BY continent"
+
+//Which region has the highest average gnp?
+SELECT region, avg(country.gnp) AS "highest" FROM country GROUP BY region ORDER BY "highest" DESC LIMIT 1
+
+//Who is the most influential head of state measured by population?
+SELECT headofstate, population FROM country GROUP BY headofstate, country.population ORDER BY population DESC LIMIT 1
+
+//Who is the most influential head of state measured by surface area?
+SELECT headofstate, surfacearea FROM country GROUP BY headofstate, country.surfacearea ORDER BY surfacearea DESC LIMIT 1
+
+//What are the most common forms of government? (hint: use count(*))
+SELECT governmentform, count(country.name) AS "Countries" FROM country GROUP BY governmentform
+
+//What are the forms of government for the top ten countries by surface area?
+WITH tenlargest AS (SELECT surfacearea, governmentform, name FROM country ORDER BY surfacearea DESC LIMIT 10) SELECT governmentform, name FROM tenlargest
+
+//What are the forms of government for the top ten richest nations? (technically most productive)
+WITH richest AS (SELECT governmentform, gnp, name FROM country ORDER BY gnp DESC LIMIT 10) SELECT governmentform, gnp, name FROM richest
+
+What are the forms of government for the top ten richest per capita nations? (technically most productive)
+WITH richest AS (SELECT governmentform, gnp, population, name FROM country ORDER BY gnp DESC LIMIT 10) SELECT governmentform, gnp/population AS "per capita wealth", name FROM richest
+
+//Which countries are in the top 5% in terms of area?
+SELECT surfacearea, name FROM country GROUP BY country.surfacearea, country.name ORDER BY surfacearea DESC LIMIT 12
+
+//What is the total population in China?
+SELECT population FROM country WHERE name='China'
+
+//How many countries are in North America?
+SELECT continent, count(country.name) AS "Countries" FROM country WHERE continent = 'North America' GROUP BY continent
+
+//Which countries gained their independence before 1963?
+SELECT name FROM country WHERE indepyear < 1963
+
+//What is the total population of all continents?
+SELECT SUM(population) AS "World Population" FROM country;
+
+//SELECT AVG(lifeexpectancy) AS "World Avg Expectancy" FROM country;
+
+//Which countries have the letter z in the name? How many?
+SELECT name FROM country WHERE name LIKE '%z%' OR name LIKE 'Z%';
+
+//What is the age of Jamaica?
+SELECT name, (2017-indepyear) AS "Jamaica Age" FROM country WHERE name='Jamaica'
+
+//What is the 3rd most common language spoken?
+WITH Top_3 AS (SELECT count(language), language FROM countrylanguage GROUP BY language ORDER BY count DESC LIMIT 3)
+SELECT * FROM Top_3 ORDER BY count ASC LIMIT 1
+
+//How many cities are in Chile?
+SELECT count(name) FROM city WHERE countrycode='CHL'
+
+//List countries without an official language.
+SELECT DISTINCT countrycode FROM countrylanguage WHERE isofficial = 'false' EXCEPT (SELECT DISTINCT countrycode FROM countrylanguage WHERE isofficial = 'true') ORDER BY countrycode
